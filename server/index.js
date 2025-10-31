@@ -1,11 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+<<<<<<< HEAD
 const notesRoutes = require('./routes/notes');
 const notionRoutes = require('./routes/notion');
 
 // Load environment variables
 dotenv.config();
+=======
+const path = require('path');
+
+// Load environment variables from server/.env regardless of CWD, before loading routes
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+
+const notesRoutes = require('./routes/notes');
+const notionRoutes = require('./routes/notion');
+
+// Environment variables are already loaded above
+>>>>>>> 5dcaee0 (Corrected env issues)
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -35,8 +47,13 @@ app.use((err, req, res, next) => {
   });
 });
 
+<<<<<<< HEAD
 // 404 handler
 app.use('*', (req, res) => {
+=======
+// 404 handler (Express 5 compatible - no wildcard string)
+app.use((req, res) => {
+>>>>>>> 5dcaee0 (Corrected env issues)
   res.status(404).json({ error: 'Route not found' });
 });
 
