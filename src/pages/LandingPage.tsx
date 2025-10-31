@@ -27,7 +27,7 @@ export const LandingPage: React.FC = () => {
 
         const fetchedMentors = snapshot.docs.map((doc) => {
           const data = doc.data();
-          const ratings = data.ratings || [];
+          const ratings: number[] = Array.isArray(data.ratings) ? data.ratings : [];
 
           // Calculate the frequency of each rating (1-5)
           const ratingFrequency = ratings.reduce((acc: Record<number, number>, rating: number) => {
@@ -42,10 +42,10 @@ export const LandingPage: React.FC = () => {
 
           return {
             id: doc.id,
-            name: data.name,
-            photoURL: data.photoURL,
-            domain: data.domain,
-            expertise: data.expertise,
+            name: data.name ?? "",
+            photoURL: data.photoURL ?? "",
+            domain: data.domain ?? "",
+            expertise: data.expertise ?? "",
             highestFrequencyRating,
           };
         });
@@ -125,7 +125,7 @@ export const LandingPage: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <Avatar>
                   <AvatarImage src={mentor.photoURL} alt={mentor.name} />
-                  <AvatarFallback>{mentor.name[0]}</AvatarFallback>
+                  <AvatarFallback>{mentor.name?.[0] ?? "?"}</AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="font-semibold text-lg">{mentor.name}</h3>

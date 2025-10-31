@@ -1,6 +1,29 @@
 import { auth } from '../firebase';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const RAW_API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+function resolveApiBaseUrl(rawBaseUrl: string): string {
+  if (typeof window === 'undefined') return rawBaseUrl;
+  if (!rawBaseUrl) return '/api';
+
+  // If starts with ':' (e.g. ':5000/api'), prefix protocol and hostname
+  if (rawBaseUrl.startsWith(':')) {
+    const url = `${window.location.protocol}//${window.location.hostname}${rawBaseUrl}`;
+    console.warn('[notesApi] Normalized VITE_API_URL from', rawBaseUrl, 'to', url);
+    return url;
+  }
+
+  // If it's a bare host like 'localhost:5000/api'
+  if (!/^https?:\/\//i.test(rawBaseUrl) && /:\d+\//.test(rawBaseUrl)) {
+    const url = `${window.location.protocol}//${rawBaseUrl}`;
+    console.warn('[notesApi] Normalized VITE_API_URL from', rawBaseUrl, 'to', url);
+    return url;
+  }
+
+  return rawBaseUrl;
+}
+
+const API_BASE_URL = resolveApiBaseUrl(RAW_API_BASE_URL);
 
 // Helper function to get auth headers
 const getAuthHeaders = async () => {
