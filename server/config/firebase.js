@@ -16,6 +16,15 @@ const initializeFirebase = () => {
       client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
     };
 
+    // Basic validation for helpful errors during setup
+    const missing = [];
+    if (!serviceAccount.project_id) missing.push('FIREBASE_PROJECT_ID');
+    if (!serviceAccount.client_email) missing.push('FIREBASE_CLIENT_EMAIL');
+    if (!serviceAccount.private_key) missing.push('FIREBASE_PRIVATE_KEY');
+    if (missing.length) {
+      throw new Error(`Missing Firebase env vars: ${missing.join(', ')}. Check server/.env`);
+    }
+
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
       projectId: process.env.FIREBASE_PROJECT_ID

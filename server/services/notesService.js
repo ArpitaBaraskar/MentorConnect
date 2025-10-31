@@ -5,6 +5,28 @@ class NotesService {
     this.db = getFirestore();
   }
 
+  static serializeDate(value) {
+    if (!value) return null;
+    // Firestore Timestamp
+    if (typeof value.toDate === 'function') {
+      return value.toDate().toISOString();
+    }
+    // Native Date
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+    // Already string or other
+    return value;
+  }
+
+  static serializeNote(note) {
+    return {
+      ...note,
+      createdAt: NotesService.serializeDate(note.createdAt),
+      updatedAt: NotesService.serializeDate(note.updatedAt),
+    };
+  }
+
   // Create a new note
   async createNote(userId, noteData) {
     try {
@@ -16,11 +38,8 @@ class NotesService {
       };
 
       const docRef = await this.db.collection('notes').add(note);
-      
-      return {
-        id: docRef.id,
-        ...note
-      };
+      const created = NotesService.serializeNote(note);
+      return { id: docRef.id, ...created };
     } catch (error) {
       console.error('Error creating note:', error);
       throw new Error('Failed to create note');
@@ -36,10 +55,10 @@ class NotesService {
         .orderBy('updatedAt', 'desc')
         .get();
 
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return { id: doc.id, ...NotesService.serializeNote(data) };
+      });
     } catch (error) {
       console.error('Error fetching user notes:', error);
       throw new Error('Failed to fetch notes');
@@ -61,10 +80,7 @@ class NotesService {
         throw new Error('Unauthorized access to note');
       }
 
-      return {
-        id: doc.id,
-        ...noteData
-      };
+      return { id: doc.id, ...NotesService.serializeNote(noteData) };
     } catch (error) {
       console.error('Error fetching note:', error);
       throw new Error('Failed to fetch note');
@@ -93,12 +109,8 @@ class NotesService {
       };
 
       await noteRef.update(updatedData);
-
-      return {
-        id: noteId,
-        ...noteData,
-        ...updatedData
-      };
+      const serialized = NotesService.serializeNote({ ...noteData, ...updatedData });
+      return { id: noteId, ...serialized };
     } catch (error) {
       console.error('Error updating note:', error);
       throw new Error('Failed to update note');

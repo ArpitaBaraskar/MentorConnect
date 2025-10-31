@@ -100,7 +100,14 @@ export const NotesList: React.FC<NotesListProps> = ({
               <div className="flex items-center text-xs text-gray-400 mt-2">
                 <Calendar className="w-3 h-3 mr-1" />
                 <span>
-                  {format(new Date(note.updatedAt), 'MMM d, yyyy')}
+                  {(() => {
+                    try {
+                      const d = note.updatedAt ? new Date(note.updatedAt) : null;
+                      return d && !isNaN(d.getTime()) ? format(d, 'MMM d, yyyy') : '—';
+                    } catch {
+                      return '—';
+                    }
+                  })()}
                 </span>
                 {note.isPublic && (
                   <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 rounded-full">
